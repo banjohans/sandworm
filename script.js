@@ -52,7 +52,10 @@ function spawnPacmen() {
       pacman.x = Math.floor(Math.random() * (maxX / gridSize)) * gridSize;
       pacman.y = Math.floor(Math.random() * (maxY / gridSize)) * gridSize;
     } while (
-      snake.some((segment) => segment.x === pacman.x && segment.y === pacman.y)
+      snake.some(
+        (segment) => segment.x === pacman.x && segment.y === pacman.y
+      ) ||
+      pacmen.some((p) => p.x === pacman.x && p.y === pacman.y)
     );
 
     pacman.direction = { x: 1, y: 0 }; // Startretning
@@ -63,6 +66,16 @@ function spawnPacmen() {
     pacmanElement.classList.add("pacman");
     pacmanElement.style.left = `${pacman.x}px`;
     pacmanElement.style.top = `${pacman.y}px`;
+
+    // Legg til munn og øyne
+    const pacmanEye = document.createElement("div");
+    pacmanEye.classList.add("pacman__eye");
+    pacmanElement.appendChild(pacmanEye);
+
+    const pacmanMouth = document.createElement("div");
+    pacmanMouth.classList.add("pacman__mouth");
+    pacmanElement.appendChild(pacmanMouth);
+
     document.body.appendChild(pacmanElement);
   }
 }
@@ -131,13 +144,13 @@ function checkPacmanCollision() {
       score++; // Øk poengsummen
       updateScore(); // Oppdater poengsummen
 
-      // Fjern Pac-Man fra listen og DOM
-      pacmen.splice(index, 1);
+      // Fjern denne Pac-Man fra listen og DOM
       const pacmanElements = document.querySelectorAll(".pacman");
-      pacmanElements[index].remove(); // Fjern det tilsvarende Pac-Man-elementet fra DOM
+      pacmanElements[index].remove(); // Fjern det tilsvarende DOM-elementet
+      pacmen.splice(index, 1); // Fjern fra listen
 
       numPacmen++; // Øk antallet Pac-Men
-      spawnPacmen(); // Legg til en ny Pac-Man
+      spawnPacmen(); // Spawner en ny Pac-Man
     }
   });
 }
