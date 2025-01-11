@@ -350,6 +350,7 @@ function handleMouseClick(event) {
   updateScore();
 }
 
+// La en super-pacman komme med ujevne mellomrom mellom 1 og 2 minutt, som gir høgere poeng
 function scheduleSuperPacmanSpawn() {
   const minDelay = 60000; // Minimum forsinkelse: 1 minutt
   const maxDelay = 120000; // Maksimum forsinkelse: 2 minutter
@@ -395,6 +396,48 @@ function updateScore() {
     scoreElement.textContent = `Score: ${score}`; // Oppdater poengtallet
   }
 }
+
+// Swipefunksjoner for å kunne spill på mobil
+
+let startX, startY, endX, endY;
+
+// Start av swipe
+function handleTouchStart(event) {
+  const touch = event.touches[0];
+  startX = touch.clientX;
+  startY = touch.clientY;
+}
+
+// Slutt av swipe
+function handleTouchEnd(event) {
+  const touch = event.changedTouches[0];
+  endX = touch.clientX;
+  endY = touch.clientY;
+
+  // Beregn swipe-retning
+  const diffX = endX - startX;
+  const diffY = endY - startY;
+
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    // Horisontal swipe
+    if (diffX > 0 && direction.x === 0) {
+      direction = { x: 1, y: 0 }; // Høyre
+    } else if (diffX < 0 && direction.x === 0) {
+      direction = { x: -1, y: 0 }; // Venstre
+    }
+  } else {
+    // Vertikal swipe
+    if (diffY > 0 && direction.y === 0) {
+      direction = { x: 0, y: 1 }; // Ned
+    } else if (diffY < 0 && direction.y === 0) {
+      direction = { x: 0, y: -1 }; // Opp
+    }
+  }
+}
+
+// Legg til event listeners
+window.addEventListener("touchstart", handleTouchStart);
+window.addEventListener("touchend", handleTouchEnd);
 
 // Start spillet
 startGame();
