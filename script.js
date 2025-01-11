@@ -243,6 +243,13 @@ function checkPacmanCollision() {
       // Legg til poeng basert på om det er en "super" Pac-Man
       if (pacman.isSuper) {
         score += superPacmanBonusPoints; // Legg til bonuspoeng
+
+        // **Spill av "swallow"-lyden**
+        const swallowSound = document.getElementById("swallow-sound");
+        if (swallowSound) {
+          swallowSound.currentTime = 0; // Start lyden fra begynnelsen
+          swallowSound.play();
+        }
       } else {
         score += 10; // Standard poeng
       }
