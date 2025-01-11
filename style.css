@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background-color: #111;
+  background-color: #dfa64a;
   overflow: hidden;
   position: relative;
   color: aliceblue;
@@ -21,12 +21,12 @@ body {
 
 .pacman_eye {
   position: absolute;
-  width: 2px;
-  height: 2px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
-  top: 5px;
+  top: 3px;
   right: 8px;
-  background: #333333;
+  background: #0783f7;
 }
 
 .pacman_mouth {
@@ -61,5 +61,5 @@ body {
 }
 
 .snake {
-  background-color: #00ff00; /* Grønn for slangen */
+  background-color: #6a3f2e; /* Grønn for slangen */
 }
