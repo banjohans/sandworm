@@ -1,6 +1,5 @@
 const gridSize = 20; // Størrelsen på hver rute i rutenettet
 let snake = [{ x: 200, y: 200 }]; // Slangens startposisjon
-let pacmen = []; // Pac-Man sin startposisjon
 let numPacmen = 1;
 let direction = { x: 1, y: 0 }; // Slangens bevegelsesretning (start: høyre)
 let pacmanDirection = { x: 1, y: 0 }; // Pac-Man sin startretning (mot høyre)
@@ -41,11 +40,37 @@ function createSnake() {
   });
 }
 
+// Tilfeldig retning på spawnet pacmann
+function randomDirection() {
+  const directions = [
+    { x: 0, y: -1 }, // Opp
+    { x: 0, y: 1 }, // Ned
+    { x: -1, y: 0 }, // Venstre
+    { x: 1, y: 0 }, // Høyre
+  ];
+  return directions[Math.floor(Math.random() * directions.length)];
+}
+
+function randomizePacmanDirection() {
+  pacmen.forEach((pacman) => {
+    pacman.direction = randomDirection(); // Tilfeldig ny retning
+  });
+}
+
+// SUPERPACMAN for mer poeng
+const superPacmanProbability = 0.2; // 20% sjanse for å spawne en "super" Pac-Man
+const superPacmanBonusPoints = 50; // Ekstra poeng for "super" Pac-Man
+
 // Flytt Pac-Man til en ny, tilfeldig posisjon
 function spawnPacmen() {
   const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
   const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
 
+  // Fjern alle eksisterende Pac-Men fra DOM og listen
+  document.querySelectorAll(".pacman").forEach((element) => element.remove());
+  pacmen = []; // Nullstill listen over eksisterende Pac-Men
+
+  // Legg til nye Pac-Men basert på numPacmen
   while (pacmen.length < numPacmen) {
     let pacman = {};
     do {
@@ -58,25 +83,77 @@ function spawnPacmen() {
       pacmen.some((p) => p.x === pacman.x && p.y === pacman.y)
     );
 
-    pacman.direction = { x: 1, y: 0 }; // Startretning
+    pacman.direction = randomDirection(); // Velg en tilfeldig retning
+    pacman.isSuper = Math.random() < superPacmanProbability; // Bestem om det er en "super" Pac-Man
     pacmen.push(pacman);
 
-    // Legg til ny Pac-Man i DOM
+    // Opprett DOM-element
     const pacmanElement = document.createElement("div");
     pacmanElement.classList.add("pacman");
+    if (pacman.isSuper) {
+      pacmanElement.classList.add("super-pacman"); // Spesialklasse for "super" Pac-Man
+    }
     pacmanElement.style.left = `${pacman.x}px`;
     pacmanElement.style.top = `${pacman.y}px`;
 
     // Legg til munn og øyne
     const pacmanEye = document.createElement("div");
-    pacmanEye.classList.add("pacman__eye");
+    pacmanEye.classList.add("pacman_eye");
     pacmanElement.appendChild(pacmanEye);
 
     const pacmanMouth = document.createElement("div");
-    pacmanMouth.classList.add("pacman__mouth");
+    pacmanMouth.classList.add("pacman_mouth");
     pacmanElement.appendChild(pacmanMouth);
 
     document.body.appendChild(pacmanElement);
+  }
+}
+
+function spawnSuperPacman() {
+  // Sjekk om det allerede finnes en Super-Pacman
+  if (pacmen.some((p) => p.isSuper)) return;
+
+  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
+  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
+
+  let superPacman = {};
+  do {
+    superPacman.x = Math.floor(Math.random() * (maxX / gridSize)) * gridSize;
+    superPacman.y = Math.floor(Math.random() * (maxY / gridSize)) * gridSize;
+  } while (
+    snake.some(
+      (segment) => segment.x === superPacman.x && segment.y === superPacman.y
+    ) ||
+    pacmen.some((p) => p.x === superPacman.x && p.y === superPacman.y)
+  );
+
+  superPacman.direction = randomDirection();
+  superPacman.isSuper = true; // Marker som Super-Pacman
+  pacmen.push(superPacman);
+
+  // Opprett DOM-element
+  const pacmanElement = document.createElement("div");
+  pacmanElement.classList.add("pacman", "super-pacman");
+  pacmanElement.style.left = `${superPacman.x}px`;
+  pacmanElement.style.top = `${superPacman.y}px`;
+
+  // Legg til munn og øyne
+  const pacmanEye = document.createElement("div");
+  pacmanEye.classList.add("pacman_eye");
+  pacmanElement.appendChild(pacmanEye);
+
+  const pacmanMouth = document.createElement("div");
+  pacmanMouth.classList.add("pacman_mouth");
+  pacmanElement.appendChild(pacmanMouth);
+
+  document.body.appendChild(pacmanElement);
+
+  // **Spill av lyd**
+  const superPacmanSound = document.getElementById("lisan-al-gaib");
+  if (superPacmanSound) {
+    superPacmanSound.volume = 0.2; // nedjustert volum
+    superPacmanSound.currentTime = 0; // Start fra begynnelsen
+    superPacmanSound.play();
   }
 }
 
@@ -109,10 +186,20 @@ function moveSnake() {
 
 function movePacmen() {
   pacmen.forEach((pacman, index) => {
+    // Sjekk om det er på tide å endre retning
+    if (
+      !pacman.nextDirectionChange ||
+      Date.now() > pacman.nextDirectionChange
+    ) {
+      pacman.direction = randomDirection(); // Velg en ny tilfeldig retning
+      pacman.nextDirectionChange = Date.now() + Math.random() * 4000 + 2000; // Neste retning etter 2-4 sekunder
+    }
+
+    // Oppdater posisjonen basert på retningen
     pacman.x += pacman.direction.x * gridSize;
     pacman.y += pacman.direction.y * gridSize;
 
-    // Endre retning hvis Pac-Man treffer kanten av skjermen
+    // Snu retningen hvis Pac-Man treffer kanten av skjermen
     if (pacman.x < 0 || pacman.x >= window.innerWidth) {
       pacman.direction.x *= -1;
     }
@@ -124,6 +211,17 @@ function movePacmen() {
     const pacmanElement = document.querySelectorAll(".pacman")[index];
     pacmanElement.style.left = `${pacman.x}px`;
     pacmanElement.style.top = `${pacman.y}px`;
+
+    // Rotér Pac-Man basert på retningen
+    if (pacman.direction.x === 1) {
+      pacmanElement.style.transform = "rotate(0deg)"; // Går mot høyre
+    } else if (pacman.direction.x === -1) {
+      pacmanElement.style.transform = "rotate(180deg)"; // Går mot venstre
+    } else if (pacman.direction.y === -1) {
+      pacmanElement.style.transform = "rotate(270deg)"; // Går opp
+    } else if (pacman.direction.y === 1) {
+      pacmanElement.style.transform = "rotate(90deg)"; // Går ned
+    }
   });
 }
 
@@ -141,18 +239,60 @@ function checkPacmanCollision() {
     // Sjekk om slangen treffer denne Pac-Man
     if (distanceX < hitboxSize && distanceY < hitboxSize) {
       growing = true; // Slangen vokser
-      score++; // Øk poengsummen
+
+      // Legg til poeng basert på om det er en "super" Pac-Man
+      if (pacman.isSuper) {
+        score += superPacmanBonusPoints; // Legg til bonuspoeng
+      } else {
+        score += 10; // Standard poeng
+      }
       updateScore(); // Oppdater poengsummen
 
-      // Fjern denne Pac-Man fra listen og DOM
+      // Fjern spist Pac-Man fra listen og DOM
       const pacmanElements = document.querySelectorAll(".pacman");
-      pacmanElements[index].remove(); // Fjern det tilsvarende DOM-elementet
+      pacmanElements[index].remove(); // Fjern fra DOM
       pacmen.splice(index, 1); // Fjern fra listen
 
-      numPacmen++; // Øk antallet Pac-Men
-      spawnPacmen(); // Spawner en ny Pac-Man
+      // Legg til nye Pac-Men
+      addNewPacman();
+      addNewPacman();
     }
   });
+}
+
+function addNewPacman() {
+  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
+  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
+
+  let pacman = {};
+  do {
+    pacman.x = Math.floor(Math.random() * (maxX / gridSize)) * gridSize;
+    pacman.y = Math.floor(Math.random() * (maxY / gridSize)) * gridSize;
+  } while (
+    snake.some((segment) => segment.x === pacman.x && segment.y === pacman.y) ||
+    pacmen.some((p) => p.x === pacman.x && p.y === pacman.y)
+  );
+
+  pacman.direction = randomDirection(); // Velg en tilfeldig retning
+  pacman.changeDirectionTime = Date.now() + Math.random() * 4000 + 2000; // Randomisert tidsintervall
+  pacmen.push(pacman);
+
+  // Legg til ny Pac-Man i DOM
+  const pacmanElement = document.createElement("div");
+  pacmanElement.classList.add("pacman");
+  pacmanElement.style.left = `${pacman.x}px`;
+  pacmanElement.style.top = `${pacman.y}px`;
+
+  // Legg til munn og øyne
+  const pacmanEye = document.createElement("div");
+  pacmanEye.classList.add("pacman_eye");
+  pacmanElement.appendChild(pacmanEye);
+
+  const pacmanMouth = document.createElement("div");
+  pacmanMouth.classList.add("pacman_mouth");
+  pacmanElement.appendChild(pacmanMouth);
+
+  document.body.appendChild(pacmanElement);
 }
 
 // Parametere for å randomisere pacmans bevegelser
@@ -198,10 +338,30 @@ function handleMouseClick(event) {
   // Oppdater slangen, flytt segmentene for å følge etter
   snake = [newHead, ...snake.slice(0, snake.length - 1)];
   createSnake();
+  // Reduser poengsum og oppdater visningen
+  score = Math.max(0, score - 5); // Sørg for at poeng ikke blir negativ
+  updateScore();
+}
+
+function scheduleSuperPacmanSpawn() {
+  const minDelay = 60000; // Minimum forsinkelse: 1 minutt
+  const maxDelay = 120000; // Maksimum forsinkelse: 2 minutter
+  const randomDelay =
+    Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+  setTimeout(() => {
+    spawnSuperPacman(); // Spawner en ny Super-Pacman
+    scheduleSuperPacmanSpawn(); // Planlegg neste spawn
+  }, randomDelay);
 }
 
 // Start spillet
 function startGame() {
+  // Start bakgrunnsmusikken
+  const backgroundMusic = document.getElementById("background-music");
+  backgroundMusic.volume = 0.5; // Juster volumet (0.0 til 1.0)
+  backgroundMusic.play();
+
   spawnPacmen(); // Plasser flere Pac-Men i startposisjoner
   createSnake(); // Plasser slangen
   updateScore(); // Vis initial poengsum
@@ -211,6 +371,8 @@ function startGame() {
   setInterval(movePacmen, 200); // Flytt Pac-Men
   setInterval(randomizePacmanDirection, 2000 + Math.random() * 2000); // Endre retning for Pac-Men
   timerInterval = setInterval(updateTimer, 1000); // Nedtelling
+  // Planlegg Super-Pacman spawns
+  scheduleSuperPacmanSpawn(); // <-- Legg dette til
 }
 
 // Lytt etter tastetrykk

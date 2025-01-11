@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  background-image: url(images/dune.png);
   background-color: #dfa64a;
   overflow: hidden;
   position: relative;
@@ -26,7 +27,7 @@ body {
   border-radius: 50%;
   top: 3px;
   right: 8px;
-  background: #0783f7;
+  background: #79b8f3;
 }
 
 .pacman_mouth {
@@ -62,4 +63,9 @@ body {
 
 .snake {
   background-color: #6a3f2e; /* Grønn for slangen */
+}
+
+.super-pacman {
+  background-color: #ff0000; /* Rød farge for "super" Pac-Man */
+  border: 2px solid gold; /* Gullkant for å markere spesialstatus */
 }
