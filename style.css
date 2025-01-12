@@ -2,7 +2,7 @@ body {
   margin: 0;
   background-image: url(images/dune.png);
   background-color: #dfa64a;
-  overflow: hidden;
+  /* overflow: hidden; */
   position: relative;
   color: aliceblue;
 }
@@ -180,4 +180,95 @@ body {
 .super-pacman {
   background-color: #ff0000; /* Rød farge for "super" Pac-Man */
   border: 2px solid gold; /* Gullkant for å markere spesialstatus */
+}
+
+.hidden {
+  display: none !important; /* Using !important to ensure it overrides other display properties */
+}
+
+#home-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  background-color: rgba(
+    241,
+    187,
+    86,
+    0.9
+  ); /* Valgfri gjennomsiktig bakgrunn */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Dekker hele skjermen i bredde */
+  height: 100vh; /* Dekker hele skjermen i høyde */
+  object-fit: cover; /* Sørger for at bildet fyller skjermen uten å forvrenge proporsjoner */
+  z-index: 1; /* Ligger bak knappene */
+}
+
+#button-container {
+  position: absolute;
+  right: 5%; /* Juster containeren til høyre */
+  top: 50%; /* Sentraliser vertikalt */
+  transform: translateY(-50%); /* Eksakt sentrering */
+  display: flex;
+  flex-direction: column; /* Plasser knappene i en kolonne */
+  flex-wrap: nowrap; /* Hindrer knappene i å bryte linjen */
+  gap: 10px; /* Avstand mellom knappene */
+  z-index: 2; /* Sørger for at containeren og knappene ligger foran logoen */
+}
+
+#menu-content {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.menu-button {
+  padding: 10px 20px;
+  font-size: 18px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  color: white;
+  background-color: #8b4513;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.menu-button:hover {
+  background-color: #a0522d;
+}
+
+#game-over-message {
+  position: absolute; /* Gjør plasseringen uavhengig av andre elementer */
+  top: 20%; /* Juster vertikal plassering */
+  left: 10%; /* Sentraliser horisontalt */
+  width: 200px;
+  transform: translate(-100%, -200%); /* Sentraliser elementet horisontalt */
+  color: rgb(96, 38, 0);
+  font-family: "Barlow Semi Condensed";
+  font-size: 1.5rem;
+  text-align: center;
+  background-color: rgba(248, 174, 71, 0.4); /* Justerbar gjennomsiktighet */
+  /* padding: 20px; */
+  border-radius: 15px;
+  margin-bottom: 10px;
+}
+
+#game-over-message h2 {
+  margin-bottom: 10px;
 }

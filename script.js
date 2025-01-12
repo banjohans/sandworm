@@ -8,9 +8,75 @@ let timeRemaining = 180; // 3 minutter (180 sekunder)
 let gameInterval; // Referanse til spillets hovedintervall
 let timerInterval; // Referanse til nedtellingsintervall
 
+const startGameButton = document.getElementById("start-game-button");
+const resumeButton = document.getElementById("resume-button");
+const restartButton = document.getElementById("restart-button");
+const shareButton = document.getElementById("share-button");
+const homeScreen = document.getElementById("home-screen");
+const homeButton = document.getElementById("home-button");
+
+let gameRunning = false; // For å holde oversikt over spillstatus
+
+startGameButton.addEventListener("click", () => {
+  console.log("Start Game clicked");
+  if (homeScreen) {
+    homeScreen.classList.add("hidden"); // Skjul hjemskjermen
+  } else {
+    console.error("Element with id 'home-screen' not found!");
+  }
+  startGame(); // Start spillet
+});
+
+// Resume Game
+resumeButton.addEventListener("click", () => {
+  homeScreen.classList.add("hidden"); // Skjul hjemskjermen
+  homeButton.classList.remove("hidden"); // Vis "Home"-knappen
+  resumeGame(); // Fortsett spillet
+  gameRunning = true;
+});
+
+// Restart Game
+restartButton.addEventListener("click", () => {
+  location.reload(); // Last inn siden på nytt
+});
+
+// Pause og gå tilbake til hjemskjermen
+homeButton.addEventListener("click", () => {
+  pauseGame(); // Pause spillet
+  homeScreen.classList.remove("hidden"); // Vis hjemskjermen
+  resumeButton.classList.remove("hidden"); // Vis "Resume"-knappen
+  homeButton.classList.add("hidden"); // Skjul "Home"-knappen
+});
+
+// Share Game
+shareButton.addEventListener("click", () => {
+  const gameUrl = window.location.href;
+  navigator.clipboard
+    .writeText(gameUrl)
+    .then(() => alert("Game URL copied to clipboard!"))
+    .catch((err) => console.error("Failed to copy URL:", err));
+});
+
+// Spilllogikk
+function pauseGame() {
+  clearInterval(gameInterval);
+  clearInterval(timerInterval);
+}
+
+function resumeGame() {
+  gameInterval = setInterval(moveSnake, 120);
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
 // Game timer
 function updateTimer() {
   const timerElement = document.querySelector("#timer");
+  const homeScreen = document.getElementById("home-screen");
+  const gameOverMessage = document.getElementById("game-over-message");
+  const finalScoreSpan = document.getElementById("final-score");
+  const homeButton = document.getElementById("home-button");
+  const resumeButton = document.getElementById("resume-button");
+
   if (timeRemaining > 0) {
     timeRemaining--;
     const minutes = Math.floor(timeRemaining / 60);
@@ -19,9 +85,28 @@ function updateTimer() {
       .toString()
       .padStart(2, "0")}`;
   } else {
-    clearInterval(timerInterval); // Stopp nedtellingen
-    clearInterval(gameInterval); // Stopp spillet
-    alert("Game Over! Your final score is: " + score); // Vis sluttmelding
+    // Stop the game
+    clearInterval(timerInterval);
+    clearInterval(gameInterval);
+
+    // Update and show game over message
+    finalScoreSpan.textContent = score;
+    gameOverMessage.classList.remove("hidden");
+
+    // Show home screen
+    homeScreen.classList.remove("hidden");
+
+    // Hide home button since we're already on home screen
+    homeButton.classList.add("hidden");
+
+    // Hide resume button since the game is over
+    resumeButton.classList.add("hidden");
+
+    // Stop background music if you want
+    const backgroundMusic = document.getElementById("background-music");
+    if (backgroundMusic) {
+      backgroundMusic.pause();
+    }
   }
 }
 
@@ -365,6 +450,12 @@ function scheduleSuperPacmanSpawn() {
 
 // Start spillet
 function startGame() {
+  // Gjem game over melding hvis den finnes
+  const gameOverMessage = document.getElementById("game-over-message");
+  if (gameOverMessage) {
+    gameOverMessage.classList.add("hidden");
+  }
+
   // Start bakgrunnsmusikken
   const backgroundMusic = document.getElementById("background-music");
   backgroundMusic.volume = 0.5; // Juster volumet (0.0 til 1.0)
@@ -380,7 +471,7 @@ function startGame() {
   setInterval(randomizePacmanDirection, 2000 + Math.random() * 2000); // Endre retning for Pac-Men
   timerInterval = setInterval(updateTimer, 1000); // Nedtelling
   // Planlegg Super-Pacman spawns
-  scheduleSuperPacmanSpawn(); // <-- Legg dette til
+  scheduleSuperPacmanSpawn(); // <-- setter i gang funksjon som spawner SuperPacman
 }
 
 // Lytt etter tastetrykk
@@ -438,6 +529,3 @@ function handleTouchEnd(event) {
 // Legg til event listeners
 window.addEventListener("touchstart", handleTouchStart);
 window.addEventListener("touchend", handleTouchEnd);
-
-// Start spillet
-startGame();
