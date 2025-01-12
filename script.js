@@ -9,8 +9,6 @@ let gameInterval; // Referanse til spillets hovedintervall
 let timerInterval; // Referanse til nedtellingsintervall
 
 const startGameButton = document.getElementById("start-game-button");
-const resumeButton = document.getElementById("resume-button");
-const restartButton = document.getElementById("restart-button");
 const shareButton = document.getElementById("share-button");
 const homeScreen = document.getElementById("home-screen");
 const rulesButton = document.getElementById("rules-button");
@@ -77,18 +75,6 @@ startGameButton.addEventListener("click", () => {
   startGame(); // Start spillet
 });
 
-// Resume Game
-resumeButton.addEventListener("click", () => {
-  homeScreen.classList.add("hidden"); // Skjul hjemskjermen
-  resumeGame(); // Fortsett spillet
-  gameRunning = true;
-});
-
-// Restart Game
-restartButton.addEventListener("click", () => {
-  location.reload(); // Last inn siden på nytt
-});
-
 // Share Game
 shareButton.addEventListener("click", () => {
   const gameUrl = window.location.href;
@@ -115,7 +101,6 @@ function updateTimer() {
   const homeScreen = document.getElementById("home-screen");
   const gameOverMessage = document.getElementById("game-over-message");
   const finalScoreSpan = document.getElementById("final-score");
-  const resumeButton = document.getElementById("resume-button");
 
   if (timeRemaining > 0) {
     timeRemaining--;
@@ -135,9 +120,6 @@ function updateTimer() {
 
     // Show home screen
     homeScreen.classList.remove("hidden");
-
-    // Hide resume button since the game is over
-    resumeButton.classList.add("hidden");
 
     // Stop background music if you want
     const backgroundMusic = document.getElementById("background-music");
