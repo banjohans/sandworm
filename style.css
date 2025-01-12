@@ -7,24 +7,6 @@ body {
   color: aliceblue;
 }
 
-/* Styles for mobile portrait layout */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  body {
-    background-size: contain; /* Ensures the entire image fits within the screen */
-    background-position: top center; /* Adjusts the position to focus on the top */
-    background-repeat: no-repeat; /* Ensures no tiling */
-  }
-}
-
-/* Styles for mobile landscape layout */
-@media screen and (max-width: 768px) and (orientation: landscape) {
-  body {
-    background-size: cover; /* Fills the screen while preserving aspect ratio */
-    background-position: center; /* Centers the image */
-    background-repeat: no-repeat; /* Ensures no tiling */
-  }
-}
-
 .header {
   background-color: #000;
 }
@@ -230,6 +212,15 @@ body {
   height: 100vh; /* Dekker hele skjermen i høyde */
   object-fit: cover; /* Sørger for at bildet fyller skjermen uten å forvrenge proporsjoner */
   z-index: 1; /* Ligger bak knappene */
+}
+
+/* Adjust for portrait orientation on smaller devices */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  #logo {
+    object-fit: contain; /* Ensures the full image is visible */
+    width: 100%; /* Adjust width to fit screen */
+    height: auto; /* Maintain aspect ratio */
+  }
 }
 
 #button-container {
