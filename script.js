@@ -13,7 +13,57 @@ const resumeButton = document.getElementById("resume-button");
 const restartButton = document.getElementById("restart-button");
 const shareButton = document.getElementById("share-button");
 const homeScreen = document.getElementById("home-screen");
-const homeButton = document.getElementById("home-button");
+const rulesButton = document.getElementById("rules-button");
+const rulesOverlay = document.getElementById("rules-overlay");
+const closeRulesButton = document.getElementById("close-rules-button");
+const exitButton = document.getElementById("exit-button");
+
+// Funksjon for å avslutte spillet
+function exitGame() {
+  // Skjul exit-knappen
+  exitButton.classList.add("hidden");
+
+  // Vis hjemskjermen
+  homeScreen.classList.remove("hidden");
+
+  // Stopp alle aktive intervaller
+  clearInterval(gameInterval);
+  clearInterval(timerInterval);
+
+  // Nullstill variabler
+  timeRemaining = 180; // Tilbakestill timeren
+  score = 0; // Nullstill poeng
+  updateScore(); // Oppdater poengvisningen
+
+  // Fjern slange og Pac-Men fra skjermen
+  document.querySelectorAll(".snake, .pacman").forEach((el) => el.remove());
+}
+
+// Koble "Exit"-knappen til funksjonen
+exitButton.addEventListener("click", exitGame);
+
+// Vis Exit-knappen når spillet starter
+startGameButton.addEventListener("click", () => {
+  exitButton.classList.remove("hidden"); // Vis Exit-knappen
+});
+
+// Når "Rules"-knappen klikkes, vis reglene
+rulesButton.addEventListener("click", () => {
+  if (rulesOverlay) {
+    rulesOverlay.classList.remove("hidden"); // Fjern 'hidden'-klassen for å vise reglene
+  } else {
+    console.error("Element with id 'rules-overlay' not found!");
+  }
+});
+
+// Når "Close"-knappen klikkes, skjul reglene
+closeRulesButton.addEventListener("click", () => {
+  if (rulesOverlay) {
+    rulesOverlay.classList.add("hidden"); // Legg til 'hidden'-klassen for å skjule reglene
+  } else {
+    console.error("Element with id 'rules-overlay' not found!");
+  }
+});
 
 let gameRunning = false; // For å holde oversikt over spillstatus
 
@@ -30,7 +80,6 @@ startGameButton.addEventListener("click", () => {
 // Resume Game
 resumeButton.addEventListener("click", () => {
   homeScreen.classList.add("hidden"); // Skjul hjemskjermen
-  homeButton.classList.remove("hidden"); // Vis "Home"-knappen
   resumeGame(); // Fortsett spillet
   gameRunning = true;
 });
@@ -38,14 +87,6 @@ resumeButton.addEventListener("click", () => {
 // Restart Game
 restartButton.addEventListener("click", () => {
   location.reload(); // Last inn siden på nytt
-});
-
-// Pause og gå tilbake til hjemskjermen
-homeButton.addEventListener("click", () => {
-  pauseGame(); // Pause spillet
-  homeScreen.classList.remove("hidden"); // Vis hjemskjermen
-  resumeButton.classList.remove("hidden"); // Vis "Resume"-knappen
-  homeButton.classList.add("hidden"); // Skjul "Home"-knappen
 });
 
 // Share Game
@@ -74,7 +115,6 @@ function updateTimer() {
   const homeScreen = document.getElementById("home-screen");
   const gameOverMessage = document.getElementById("game-over-message");
   const finalScoreSpan = document.getElementById("final-score");
-  const homeButton = document.getElementById("home-button");
   const resumeButton = document.getElementById("resume-button");
 
   if (timeRemaining > 0) {
@@ -95,9 +135,6 @@ function updateTimer() {
 
     // Show home screen
     homeScreen.classList.remove("hidden");
-
-    // Hide home button since we're already on home screen
-    homeButton.classList.add("hidden");
 
     // Hide resume button since the game is over
     resumeButton.classList.add("hidden");
@@ -314,6 +351,23 @@ const hitboxSize = gridSize; // Treffer Pac-Man hvis slangehodet er innenfor 1 r
 let lastCloseTimestamp = null; // Tidspunktet da slangen sist var innenfor treffområdet
 const hitTimeout = 200; // Tidsvindu for å regne det som en treff (200ms)
 
+// Spiselyder til når ormen spiser frimenn
+function playRandomChompSound() {
+  const chompSounds = [
+    document.getElementById("chomp1"),
+    document.getElementById("chomp2"),
+    document.getElementById("chomp3"),
+  ];
+  const randomSound =
+    chompSounds[Math.floor(Math.random() * chompSounds.length)];
+  if (randomSound) {
+    randomSound.currentTime = 0; // Start lyden fra begynnelsen
+    randomSound.play().catch((error) => {
+      console.error("Kunne ikke spille av lyden:", error);
+    });
+  }
+}
+
 function checkPacmanCollision() {
   const head = snake[0]; // Hodet til slangen
 
@@ -325,19 +379,20 @@ function checkPacmanCollision() {
     if (distanceX < hitboxSize && distanceY < hitboxSize) {
       growing = true; // Slangen vokser
 
-      // Legg til poeng basert på om det er en "super" Pac-Man
       if (pacman.isSuper) {
-        score += superPacmanBonusPoints; // Legg til bonuspoeng
-
-        // **Spill av "swallow"-lyden**
+        // Spill "swallow"-lyden for Super-Pac-Man
         const swallowSound = document.getElementById("swallow-sound");
         if (swallowSound) {
           swallowSound.currentTime = 0; // Start lyden fra begynnelsen
           swallowSound.play();
         }
+        score += superPacmanBonusPoints; // Legg til bonuspoeng
       } else {
+        // Spill en tilfeldig chomp-lyd for vanlige Pac-Men
+        playRandomChompSound();
         score += 10; // Standard poeng
       }
+
       updateScore(); // Oppdater poengsummen
 
       // Fjern spist Pac-Man fra listen og DOM

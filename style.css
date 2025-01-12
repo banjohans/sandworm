@@ -272,3 +272,56 @@ body {
 #game-over-message h2 {
   margin-bottom: 10px;
 }
+
+/* Overlay-stil for spillreglene */
+#rules-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8); /* Mørk, gjennomsiktig bakgrunn */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+/* Innholdsboksen med reglene */
+#rules-content {
+  background-color: white;
+  color: black;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#rules-content h2 {
+  margin-top: 0;
+}
+
+#rules-content ul {
+  padding-left: 20px;
+}
+
+#exit-button {
+  position: fixed; /* Plasseringen er alltid relativ til vinduet */
+  bottom: 20px; /* Plasser 20px fra bunnen av skjermen */
+  left: 20px; /* Plasser 20px fra venstre side av skjermen */
+  padding: 10px 20px;
+  font-size: 14px;
+  font-family: "Barlow Semi Condensed", sans-serif;
+  color: white;
+  background-color: #8b4513;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 10; /* Sørger for at knappen er synlig */
+}
+
+#exit-button:hover {
+  background-color: #a0522d; /* Endre farge ved hover */
+}

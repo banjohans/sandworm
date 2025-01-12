@@ -21,6 +21,9 @@
     </audio>
     <audio id="lisan-al-gaib" src="sounds/lisanalgaib.mp3"></audio>
     <audio id="swallow-sound" src="sounds/swallow.mp3"></audio>
+    <audio id="chomp1" src="sounds/chomp1.mp3"></audio>
+    <audio id="chomp2" src="sounds/chomp2.mp3"></audio>
+    <audio id="chomp3" src="sounds/chomp3.mp3"></audio>
 
     <!-- Homescreen div -->
     <div id="home-screen">
@@ -36,12 +39,42 @@
             Resume Game
           </button>
           <button id="restart-button" class="menu-button">Restart Game</button>
+          <button id="rules-button" class="menu-button">Rules</button>
           <button id="share-button" class="menu-button">Share</button>
         </div>
       </div>
     </div>
 
-    <button id="home-button" class="hidden">Home</button>
+    <!-- Legg "rules-overlay" rett etter "home-screen"-diven -->
+    <div id="rules-overlay" class="hidden">
+      <div id="rules-content">
+        <h2>How to Play</h2>
+        <ul>
+          <li>
+            <strong>Goal:</strong> Eat as many Fremen as possible to score
+            points.
+          </li>
+          <li>
+            <strong>Special Rule:</strong> Eating "Lisan al Gaib" gives bonus
+            points.
+          </li>
+          <li>
+            <strong>Controls:</strong> Use arrow keys or swipe to move the
+            sandworm.
+          </li>
+          <li>
+            <strong>Time Limit:</strong> You have 3 minutes to collect points.
+          </li>
+          <li>
+            <strong>Mouse click:</strong> Warp to anywhere with a mouse click
+            for a 5 point penalty.
+          </li>
+        </ul>
+        <button id="close-rules-button" class="menu-button">Close</button>
+      </div>
+    </div>
+
+    <button id="exit-button" class="menu-button hidden">Exit</button>
 
     <div
       id="timer"
