@@ -5,8 +5,10 @@ let direction = { x: 1, y: 0 }; // Slangens bevegelsesretning (start: høyre)
 let pacmanDirection = { x: 1, y: 0 }; // Pac-Man sin startretning (mot høyre)
 let growing = false; // Slangen vokser ikke by default
 let timeRemaining = 180; // 3 minutter (180 sekunder)
-let gameInterval; // Referanse til spillets hovedintervall
-let timerInterval; // Referanse til nedtellingsintervall
+let gameInterval = null;
+let pacmenInterval = null;
+let pacmenDirectionInterval = null;
+let timerInterval = null;
 
 const startGameButton = document.getElementById("start-game-button");
 const shareButton = document.getElementById("share-button");
@@ -344,6 +346,7 @@ function playRandomChompSound() {
     chompSounds[Math.floor(Math.random() * chompSounds.length)];
   if (randomSound) {
     randomSound.currentTime = 0; // Start lyden fra begynnelsen
+    randomSound.volume = 0.2; // Juster volumet
     randomSound.play().catch((error) => {
       console.error("Kunne ikke spille av lyden:", error);
     });
@@ -485,8 +488,43 @@ function scheduleSuperPacmanSpawn() {
   }, randomDelay);
 }
 
+function resetGame() {
+  // Nullstill variabler
+  score = 0;
+  timeRemaining = 180; // Sett tilbake til 3 minutter
+  snake = [{ x: 200, y: 200 }]; // Startposisjon for slangen
+  direction = { x: 1, y: 0 }; // Startretning
+  pacmen = []; // Tøm listen over Pac-Men
+  growing = false;
+
+  // Nullstill intervaller
+  clearInterval(gameInterval);
+  clearInterval(timerInterval);
+  clearInterval(pacmenInterval);
+  clearInterval(pacmenDirectionInterval);
+
+  // Fjern eksisterende DOM-elementer for slange og Pac-Men
+  document.querySelectorAll(".snake, .pacman").forEach((el) => el.remove());
+
+  // Nullstill poeng og tid i UI
+  updateScore();
+  const timerElement = document.querySelector("#timer");
+  if (timerElement) {
+    timerElement.textContent = "Time: 3:00";
+  }
+
+  // Nullstill bakgrunnsmusikk
+  const backgroundMusic = document.getElementById("background-music");
+  if (backgroundMusic) {
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0; // Start fra begynnelsen
+  }
+}
+
 // Start spillet
 function startGame() {
+  resetGame(); // Nullstill spillet
+
   // Gjem game over melding hvis den finnes
   const gameOverMessage = document.getElementById("game-over-message");
   if (gameOverMessage) {
@@ -495,20 +533,24 @@ function startGame() {
 
   // Start bakgrunnsmusikken
   const backgroundMusic = document.getElementById("background-music");
-  backgroundMusic.volume = 0.5; // Juster volumet (0.0 til 1.0)
-  backgroundMusic.play();
+  if (backgroundMusic) {
+    backgroundMusic.volume = 0.7; // Juster volumet
+    backgroundMusic.play();
+  }
 
-  spawnPacmen(); // Plasser flere Pac-Men i startposisjoner
-  createSnake(); // Plasser slangen
-  updateScore(); // Vis initial poengsum
+  // Sett opp spillobjekter
+  spawnPacmen(); // Opprett Pac-Men i nye posisjoner
+  createSnake(); // Opprett slangen
+  updateScore(); // Oppdater poengsummen på skjermen
 
-  // Start intervallene
+  // Start nye intervaller for spillet
   gameInterval = setInterval(moveSnake, 120); // Flytt slangen
-  setInterval(movePacmen, 200); // Flytt Pac-Men
-  setInterval(randomizePacmanDirection, 2000 + Math.random() * 2000); // Endre retning for Pac-Men
-  timerInterval = setInterval(updateTimer, 1000); // Nedtelling
+  pacmenInterval = setInterval(movePacmen, 200); // Flytt Pac-Men
+  pacmenDirectionInterval = setInterval(randomizePacmanDirection, 3000); // Endre retning for Pac-Men
+  timerInterval = setInterval(updateTimer, 1000); // Oppdater timer
+
   // Planlegg Super-Pacman spawns
-  scheduleSuperPacmanSpawn(); // <-- setter i gang funksjon som spawner SuperPacman
+  scheduleSuperPacmanSpawn();
 }
 
 // Lytt etter tastetrykk
