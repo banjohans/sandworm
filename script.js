@@ -17,7 +17,8 @@ const rulesButton = document.getElementById("rules-button");
 const rulesOverlay = document.getElementById("rules-overlay");
 const closeRulesButton = document.getElementById("close-rules-button");
 const exitButton = document.getElementById("exit-button");
-const mainscreenMusic = new Audio("sounds/mainscreentheme.mp3");
+const mainscreenMusic = document.getElementById("mainscreen-music");
+
 mainscreenMusic.volume = 0.7; // Juster volum
 mainscreenMusic.loop = true; // Loop musikken automatisk
 
@@ -154,8 +155,12 @@ function movePacmen() {
 
 // Funksjon for å avslutte spillet
 function exitGame() {
+  console.log("Exiting game...");
   // Oppdater highscore før noe annet
   const highscore = saveHighscore(score);
+
+  stopBackgroundMusic();
+  playMainScreenMusic();
 
   // Skjul exit-knappen
   exitButton.classList.add("hidden");
@@ -182,9 +187,6 @@ function exitGame() {
 
   // Fjern slange og Pac-Men fra skjermen
   document.querySelectorAll(".snake, .pacman").forEach((el) => el.remove());
-
-  stopBackgroundMusic();
-  playMainScreenMusic();
 }
 
 // Koble "Exit"-knappen til funksjonen
@@ -714,15 +716,25 @@ function stopBackgroundMusic() {
 }
 
 function playMainScreenMusic() {
-  mainscreenMusic.currentTime = 0; // Start fra begynnelsen
-  mainscreenMusic
-    .play()
-    .catch((err) => console.error("Error playing mainscreen music:", err));
+  if (mainscreenMusic) {
+    console.log("Playing mainscreen music...");
+    mainscreenMusic.currentTime = 0; // Start fra begynnelsen
+    mainscreenMusic
+      .play()
+      .catch((err) => console.error("Error playing mainscreen music:", err));
+  } else {
+    console.warn("Mainscreen music instance not found.");
+  }
 }
 
 function stopMainScreenMusic() {
-  mainscreenMusic.pause();
-  mainscreenMusic.currentTime = 0; // Nullstill til starten
+  if (mainscreenMusic) {
+    console.log("Stopping mainscreen music...");
+    mainscreenMusic.pause();
+    mainscreenMusic.currentTime = 0; // Reset to the start
+  } else {
+    console.warn("Mainscreen music instance not found.");
+  }
 }
 
 // Vis hjemskjermen
@@ -735,21 +747,23 @@ function showHomeScreen() {
 
 // Start spillet
 function startGame() {
+  console.log("Starting game...");
+  stopMainScreenMusic(); // Stopp mainscreen-music
   resetGame(); // Nullstill spillet
 
-  // Stopp mainscreen-music
-  stopMainScreenMusic();
-
-  // Gjem game over melding hvis den finnes
+  // Skjul hjemskjermen og eventuelle game over-meldinger
   const gameOverMessage = document.getElementById("game-over-message");
   if (gameOverMessage) {
     gameOverMessage.classList.add("hidden");
+  }
+  if (homeScreen) {
+    homeScreen.classList.add("hidden");
   }
 
   // Start bakgrunnsmusikken
   const backgroundMusic = document.getElementById("background-music");
   if (backgroundMusic) {
-    backgroundMusic.volume = 0.7; // Juster volumet
+    backgroundMusic.volume = 0.8; // Juster volumet
     backgroundMusic.play();
   }
 
