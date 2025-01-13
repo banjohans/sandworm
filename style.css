@@ -2,6 +2,9 @@ body {
   margin: 0;
   background-image: url(images/dune.png);
   background-color: #dfa64a;
+  background-size: cover;
+  /* background-repeat: no-repeat; */
+  background-position: center;
   overflow: hidden;
   position: relative;
   width: 100vw;
@@ -126,6 +129,7 @@ body {
   display: none !important; /* Using !important to ensure it overrides other display properties */
 }
 
+/* Felles styling for home-screen */
 #home-screen {
   position: absolute;
   top: 0;
@@ -133,46 +137,50 @@ body {
   width: 100vw;
   height: 100vh;
   text-align: center;
-  background-color: rgba(
-    241,
-    187,
-    86,
-    0.9
-  ); /* Valgfri gjennomsiktig bakgrunn */
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #dfa64a; /* Fallback color */
+  background-image: url("sandwormlogo.png");
+  background-size: cover; /* Changed from cover to contain */
+  background-repeat: no-repeat;
+  background-position: top-center;
+  z-index: 1;
 }
 
-#logo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw; /* Dekker hele skjermen i bredde */
-  height: 100vh; /* Dekker hele skjermen i høyde */
-  object-fit: cover; /* Sørger for at bildet fyller skjermen uten å forvrenge proporsjoner */
-  z-index: 1; /* Ligger bak knappene */
-}
-
-/* Adjust for portrait orientation on smaller devices */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  #logo {
-    object-fit: contain; /* Ensures the full image is visible */
-    width: 100%; /* Adjust width to fit screen */
-    height: auto; /* Maintain aspect ratio */
+/* Portrait mode (height > width) */
+@media screen and (max-aspect-ratio: 1/1) {
+  #home-screen {
+    background-image: url("sandwormlogovertical.png");
+    background-size: cover;
+    background-position: top-center;
+    min-height: 100vh;
   }
 }
 
+/* Landscape mode (width > height) */
+@media screen and (min-aspect-ratio: 1/1) {
+  #home-screen {
+    background-image: url("sandwormlogo.png");
+    background-size: cover;
+    background-position: top-center;
+    min-width: 100vw;
+  }
+}
+
+/* Ensure the button container stays visible */
 #button-container {
   position: absolute;
-  right: 5%; /* Juster containeren til høyre */
-  top: 50%; /* Sentraliser vertikalt */
-  transform: translateY(-50%); /* Eksakt sentrering */
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  flex-direction: column; /* Plasser knappene i en kolonne */
-  flex-wrap: nowrap; /* Hindrer knappene i å bryte linjen */
-  gap: 10px; /* Avstand mellom knappene */
-  z-index: 2; /* Sørger for at containeren og knappene ligger foran logoen */
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+  padding: 20px; /* Added padding for better touch targets */
+  background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
+  border-radius: 10px;
 }
 
 #menu-content {
