@@ -17,6 +17,9 @@ const rulesButton = document.getElementById("rules-button");
 const rulesOverlay = document.getElementById("rules-overlay");
 const closeRulesButton = document.getElementById("close-rules-button");
 const exitButton = document.getElementById("exit-button");
+const mainscreenMusic = new Audio("sounds/mainscreentheme.mp3");
+mainscreenMusic.volume = 0.7; // Juster volum
+mainscreenMusic.loop = true; // Loop musikken automatisk
 
 function getHighscore() {
   const storedHighscore = localStorage.getItem("highscore");
@@ -146,37 +149,6 @@ function movePacmen() {
     pacman.x += pacman.direction.x * gridSize;
     pacman.y += pacman.direction.y * gridSize;
     updatePacmanPosition(pacman);
-  });
-}
-
-// Smart loop to avoid lagged audio playback
-const audioA = new Audio("sounds/mainscreentheme.mp3");
-const audioB = new Audio("sounds/mainscreentheme.mp3");
-
-audioA.volume = 0.7; // Juster volumet
-audioB.volume = 0.7;
-
-function startSeamlessLoop() {
-  const audioDuration = audioA.duration || 0; // Total varighet av lydfilen
-  const compensationTime = 0.2; // Tidskompensasjon (i sekunder)
-
-  // Spill av den første lydfilen
-  audioA.play();
-
-  // Sett opp tidsstyrt avspilling for den andre lydfilen
-  audioA.addEventListener("play", () => {
-    setTimeout(() => {
-      audioB.currentTime = 0; // Start fra begynnelsen
-      audioB.play();
-    }, (audioDuration - compensationTime) * 1000); // Timer basert på lydvarighet
-  });
-
-  // Sett opp tidsstyrt avspilling for den første lydfilen igjen
-  audioB.addEventListener("play", () => {
-    setTimeout(() => {
-      audioA.currentTime = 0; // Start fra begynnelsen
-      audioA.play();
-    }, (audioDuration - compensationTime) * 1000); // Timer basert på lydvarighet
   });
 }
 
@@ -741,18 +713,16 @@ function stopBackgroundMusic() {
   }
 }
 
-function stopMainScreenMusic() {
-  // Stopp begge lydfilene
-  audioA.pause();
-  audioB.pause();
-
-  // Nullstill lydens posisjon
-  audioA.currentTime = 0;
-  audioB.currentTime = 0;
+function playMainScreenMusic() {
+  mainscreenMusic.currentTime = 0; // Start fra begynnelsen
+  mainscreenMusic
+    .play()
+    .catch((err) => console.error("Error playing mainscreen music:", err));
 }
 
-function playMainScreenMusic() {
-  startSeamlessLoop(); // Start loop-avspilling
+function stopMainScreenMusic() {
+  mainscreenMusic.pause();
+  mainscreenMusic.currentTime = 0; // Nullstill til starten
 }
 
 // Vis hjemskjermen
