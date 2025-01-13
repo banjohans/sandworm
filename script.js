@@ -9,6 +9,7 @@ let gameInterval = null;
 let pacmenInterval = null;
 let pacmenDirectionInterval = null;
 let timerInterval = null;
+let superPacmanTimeout = null;
 
 const startGameButton = document.getElementById("start-game-button");
 const shareButton = document.getElementById("share-button");
@@ -667,7 +668,8 @@ function scheduleSuperPacmanSpawn() {
   const randomDelay =
     Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
-  setTimeout(() => {
+  // Lagre referansen til timeout
+  superPacmanTimeout = setTimeout(() => {
     spawnSuperPacman(); // Spawner en ny Super-Pacman
     scheduleSuperPacmanSpawn(); // Planlegg neste spawn
   }, randomDelay);
@@ -688,6 +690,12 @@ function resetGame() {
   clearInterval(pacmenInterval);
   clearInterval(pacmenDirectionInterval);
 
+  // Nullstill Super-Pacman-timeout
+  if (superPacmanTimeout) {
+    clearTimeout(superPacmanTimeout);
+    superPacmanTimeout = null;
+  }
+
   // Fjern eksisterende DOM-elementer for slange og Pac-Men
   document.querySelectorAll(".snake, .pacman").forEach((el) => el.remove());
 
@@ -698,7 +706,6 @@ function resetGame() {
     timerElement.textContent = "Time: 3:00";
   }
 
-  // Diverse musikk-kommandoer
   // Nullstill bakgrunnsmusikk
   const backgroundMusic = document.getElementById("background-music");
   if (backgroundMusic) {
