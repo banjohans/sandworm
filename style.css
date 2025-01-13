@@ -135,8 +135,8 @@ body {
   }
   .pacman,
   .snake {
-    width: 12px; /* Mindre størrelse på mobil */
-    height: 12px;
+    width: 15px; /* Mindre størrelse på mobil */
+    height: 15px;
   }
 }
 

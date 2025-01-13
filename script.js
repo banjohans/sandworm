@@ -603,10 +603,9 @@ function startGame() {
     backgroundMusic.play();
   }
 
-  // Sett opp spillobjekter
-  spawnPacmen(); // Opprett Pac-Men i nye posisjoner
-  createSnake(); // Opprett slangen
-  updateScore(); // Oppdater poengsummen på skjermen
+  // **Dynamisk justering av hastighet basert på skjermstørrelse**
+  const snakeSpeed = window.innerWidth < 768 ? 180 : 120; // Langsommere på mobil
+  const pacmanSpeed = window.innerWidth < 768 ? 250 : 200;
 
   // Start nye intervaller for spillet
   gameInterval = setInterval(moveSnake, 120); // Flytt slangen
@@ -616,6 +615,11 @@ function startGame() {
 
   // Planlegg Super-Pacman spawns
   scheduleSuperPacmanSpawn();
+
+  // Sett opp spillobjekter
+  spawnPacmen(); // Opprett Pac-Men i nye posisjoner
+  createSnake(); // Opprett slangen
+  updateScore(); // Oppdater poengsummen på skjermen
 }
 
 // Lytt etter tastetrykk
