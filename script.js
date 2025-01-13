@@ -1,4 +1,4 @@
-// const gridSize = 20; // Størrelsen på hver rute i rutenettet
+const gridSize = 20; // Størrelsen på hver rute i rutenettet
 let snake = [{ x: 200, y: 200 }]; // Slangens startposisjon
 let numPacmen = 1;
 let direction = { x: 1, y: 0 }; // Slangens bevegelsesretning (start: høyre)
@@ -18,70 +18,34 @@ const rulesOverlay = document.getElementById("rules-overlay");
 const closeRulesButton = document.getElementById("close-rules-button");
 const exitButton = document.getElementById("exit-button");
 
-// Funksjon for å kalkulere en dynamisk gridsize, for jevner opplevelse på ulike format
-function calculateGridSize() {
-  const baseSize = Math.min(window.innerWidth, window.innerHeight) / 50; // Juster faktor etter ønsket tetthet
-  return Math.floor(baseSize);
-}
+// Smart loop to avoid lagged audio playback
+const audioA = new Audio("sounds/mainscreentheme.mp3");
+const audioB = new Audio("sounds/mainscreentheme.mp3");
 
-let gridSize = calculateGridSize();
+audioA.volume = 0.7; // Juster volumet
+audioB.volume = 0.7;
 
-// Oppdater gridsize når vindauge endrast
-window.addEventListener("resize", () => {
-  gridSize = calculateGridSize();
-  updateGameElements(); // Sørg for at elementer oppdateres
-});
+function startSeamlessLoop() {
+  const audioDuration = audioA.duration || 0; // Total varighet av lydfilen
+  const compensationTime = 0.12; // Tidskompensasjon (i sekunder)
 
-function updateGameElements() {
-  // Oppdater slangens segmenter
-  document.querySelectorAll(".snake").forEach((segment) => {
-    segment.style.width = `${gridSize}px`;
-    segment.style.height = `${gridSize}px`;
+  // Spill av den første lydfilen
+  audioA.play();
+
+  // Sett opp tidsstyrt avspilling for den andre lydfilen
+  audioA.addEventListener("play", () => {
+    setTimeout(() => {
+      audioB.currentTime = 0; // Start fra begynnelsen
+      audioB.play();
+    }, (audioDuration - compensationTime) * 1000); // Timer basert på lydvarighet
   });
 
-  // Oppdater Pac-Men
-  document.querySelectorAll(".pacman").forEach((pacman) => {
-    pacman.style.width = `${gridSize}px`;
-    pacman.style.height = `${gridSize}px`;
-  });
-}
-
-let snakeSpeed = gridSize * 6; // Avhenger av gridSize
-let pacmanSpeed = gridSize * 2;
-
-// definer grid for spawning av nye karakterer (implementeres i spawn-funksjoner)
-function getMaxBounds() {
-  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
-  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
-  return { maxX, maxY };
-}
-
-function moveSnake() {
-  // Respekter rammene satt av #game-container
-  const gameContainer = document.getElementById("game-container");
-  const maxX = gameContainer.offsetWidth - gridSize;
-  const maxY = gameContainer.offsetHeight - gridSize;
-
-  const head = {
-    x: snake[0].x + direction.x * gridSize,
-    y: snake[0].y + direction.y * gridSize,
-  };
-
-  snake.unshift(head);
-  if (!growing) snake.pop();
-  createSnake();
-}
-
-function movePacmen() {
-  // Respekter rammene satt av #game-container
-  const gameContainer = document.getElementById("game-container");
-  const maxX = gameContainer.offsetWidth - gridSize;
-  const maxY = gameContainer.offsetHeight - gridSize;
-
-  pacmen.forEach((pacman) => {
-    pacman.x += pacman.direction.x * gridSize;
-    pacman.y += pacman.direction.y * gridSize;
-    updatePacmanPosition(pacman);
+  // Sett opp tidsstyrt avspilling for den første lydfilen igjen
+  audioB.addEventListener("play", () => {
+    setTimeout(() => {
+      audioA.currentTime = 0; // Start fra begynnelsen
+      audioA.play();
+    }, (audioDuration - compensationTime) * 1000); // Timer basert på lydvarighet
   });
 }
 
@@ -262,7 +226,8 @@ const superPacmanBonusPoints = 50; // Ekstra poeng for "super" Pac-Man
 
 // Flytt Pac-Man til en ny, tilfeldig posisjon
 function spawnPacmen() {
-  const { maxX, maxY } = getMaxBounds();
+  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
+  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
 
   // Fjern alle eksisterende Pac-Men fra DOM og listen
   document.querySelectorAll(".pacman").forEach((element) => element.remove());
@@ -308,9 +273,11 @@ function spawnPacmen() {
 }
 
 function spawnSuperPacman() {
-  const { maxX, maxY } = getMaxBounds();
   // Sjekk om det allerede finnes en Super-Pacman
   if (pacmen.some((p) => p.isSuper)) return;
+
+  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
+  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
 
   let superPacman = {};
   do {
@@ -483,7 +450,8 @@ function checkPacmanCollision() {
 }
 
 function addNewPacman() {
-  const { maxX, maxY } = getMaxBounds();
+  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
+  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
 
   let pacman = {};
   do {
@@ -620,22 +588,17 @@ function stopBackgroundMusic() {
 }
 
 function stopMainScreenMusic() {
-  const mainScreenMusic = document.getElementById("mainscreen-music");
-  if (mainScreenMusic) {
-    mainScreenMusic.pause();
-    mainScreenMusic.currentTime = 0; // Nullstill musikken
-  }
+  // Stopp begge lydfilene
+  audioA.pause();
+  audioB.pause();
+
+  // Nullstill lydens posisjon
+  audioA.currentTime = 0;
+  audioB.currentTime = 0;
 }
 
 function playMainScreenMusic() {
-  const mainScreenMusic = document.getElementById("mainscreen-music");
-  if (mainScreenMusic) {
-    mainScreenMusic.volume = 0.7; // Juster volumet
-    mainScreenMusic.currentTime = 0; // Start fra begynnelsen
-    mainScreenMusic
-      .play()
-      .catch((err) => console.error("Error playing main screen music:", err));
-  }
+  startSeamlessLoop(); // Start loop-avspilling
 }
 
 // Vis hjemskjermen
@@ -666,9 +629,10 @@ function startGame() {
     backgroundMusic.play();
   }
 
-  // **Dynamisk justering av hastighet basert på skjermstørrelse**
-  const snakeSpeed = window.innerWidth < 768 ? 180 : 120; // Langsommere på mobil
-  const pacmanSpeed = window.innerWidth < 768 ? 250 : 200;
+  // Sett opp spillobjekter
+  spawnPacmen(); // Opprett Pac-Men i nye posisjoner
+  createSnake(); // Opprett slangen
+  updateScore(); // Oppdater poengsummen på skjermen
 
   // Start nye intervaller for spillet
   gameInterval = setInterval(moveSnake, 120); // Flytt slangen
@@ -678,11 +642,6 @@ function startGame() {
 
   // Planlegg Super-Pacman spawns
   scheduleSuperPacmanSpawn();
-
-  // Sett opp spillobjekter
-  spawnPacmen(); // Opprett Pac-Men i nye posisjoner
-  createSnake(); // Opprett slangen
-  updateScore(); // Oppdater poengsummen på skjermen
 }
 
 // Lytt etter tastetrykk
@@ -737,6 +696,25 @@ function handleTouchEnd(event) {
   }
 }
 
-// Legg til event listeners
+// Warp ormen på mobil med touch tap
+function handleTouchTap(event) {
+  const touch = event.touches[0]; // Få den første berøringen
+  const newHeadX = Math.floor(touch.clientX / gridSize) * gridSize;
+  const newHeadY = Math.floor(touch.clientY / gridSize) * gridSize;
+
+  // Flytt hodet til den nye posisjonen
+  const newHead = { x: newHeadX, y: newHeadY };
+
+  // Oppdater slangen, flytt segmentene for å følge etter
+  snake = [newHead, ...snake.slice(0, snake.length - 1)];
+  createSnake();
+
+  // Reduser poengsum og oppdater visningen
+  score = Math.max(0, score - 5); // Sørg for at poeng ikke blir negativ
+  updateScore();
+}
+
+// Legg til event listeners for mobil-swipe og tap
 window.addEventListener("touchstart", handleTouchStart);
 window.addEventListener("touchend", handleTouchEnd);
+window.addEventListener("touchstart", handleTouchTap);
