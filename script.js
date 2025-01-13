@@ -1,4 +1,4 @@
-const gridSize = 20; // Størrelsen på hver rute i rutenettet
+// const gridSize = 20; // Størrelsen på hver rute i rutenettet
 let snake = [{ x: 200, y: 200 }]; // Slangens startposisjon
 let numPacmen = 1;
 let direction = { x: 1, y: 0 }; // Slangens bevegelsesretning (start: høyre)
@@ -18,6 +18,73 @@ const rulesOverlay = document.getElementById("rules-overlay");
 const closeRulesButton = document.getElementById("close-rules-button");
 const exitButton = document.getElementById("exit-button");
 
+// Funksjon for å kalkulere en dynamisk gridsize, for jevner opplevelse på ulike format
+function calculateGridSize() {
+  const baseSize = Math.min(window.innerWidth, window.innerHeight) / 50; // Juster faktor etter ønsket tetthet
+  return Math.floor(baseSize);
+}
+
+let gridSize = calculateGridSize();
+
+// Oppdater gridsize når vindauge endrast
+window.addEventListener("resize", () => {
+  gridSize = calculateGridSize();
+  updateGameElements(); // Sørg for at elementer oppdateres
+});
+
+function updateGameElements() {
+  // Oppdater slangens segmenter
+  document.querySelectorAll(".snake").forEach((segment) => {
+    segment.style.width = `${gridSize}px`;
+    segment.style.height = `${gridSize}px`;
+  });
+
+  // Oppdater Pac-Men
+  document.querySelectorAll(".pacman").forEach((pacman) => {
+    pacman.style.width = `${gridSize}px`;
+    pacman.style.height = `${gridSize}px`;
+  });
+}
+
+let snakeSpeed = gridSize * 6; // Avhenger av gridSize
+let pacmanSpeed = gridSize * 2;
+
+// definer grid for spawning av nye karakterer (implementeres i spawn-funksjoner)
+function getMaxBounds() {
+  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
+  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
+  return { maxX, maxY };
+}
+
+function moveSnake() {
+  // Respekter rammene satt av #game-container
+  const gameContainer = document.getElementById("game-container");
+  const maxX = gameContainer.offsetWidth - gridSize;
+  const maxY = gameContainer.offsetHeight - gridSize;
+
+  const head = {
+    x: snake[0].x + direction.x * gridSize,
+    y: snake[0].y + direction.y * gridSize,
+  };
+
+  snake.unshift(head);
+  if (!growing) snake.pop();
+  createSnake();
+}
+
+function movePacmen() {
+  // Respekter rammene satt av #game-container
+  const gameContainer = document.getElementById("game-container");
+  const maxX = gameContainer.offsetWidth - gridSize;
+  const maxY = gameContainer.offsetHeight - gridSize;
+
+  pacmen.forEach((pacman) => {
+    pacman.x += pacman.direction.x * gridSize;
+    pacman.y += pacman.direction.y * gridSize;
+    updatePacmanPosition(pacman);
+  });
+}
+
 // Smart loop to avoid lagged audio playback
 const audioA = new Audio("sounds/mainscreentheme.mp3");
 const audioB = new Audio("sounds/mainscreentheme.mp3");
@@ -27,7 +94,7 @@ audioB.volume = 0.7;
 
 function startSeamlessLoop() {
   const audioDuration = audioA.duration || 0; // Total varighet av lydfilen
-  const compensationTime = 0.12; // Tidskompensasjon (i sekunder)
+  const compensationTime = 0.2; // Tidskompensasjon (i sekunder)
 
   // Spill av den første lydfilen
   audioA.play();
@@ -226,8 +293,7 @@ const superPacmanBonusPoints = 50; // Ekstra poeng for "super" Pac-Man
 
 // Flytt Pac-Man til en ny, tilfeldig posisjon
 function spawnPacmen() {
-  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
-  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
+  const { maxX, maxY } = getMaxBounds();
 
   // Fjern alle eksisterende Pac-Men fra DOM og listen
   document.querySelectorAll(".pacman").forEach((element) => element.remove());
@@ -276,8 +342,7 @@ function spawnSuperPacman() {
   // Sjekk om det allerede finnes en Super-Pacman
   if (pacmen.some((p) => p.isSuper)) return;
 
-  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
-  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
+  const { maxX, maxY } = getMaxBounds();
 
   let superPacman = {};
   do {
@@ -450,8 +515,7 @@ function checkPacmanCollision() {
 }
 
 function addNewPacman() {
-  const maxX = Math.floor(window.innerWidth / gridSize) * gridSize - gridSize;
-  const maxY = Math.floor(window.innerHeight / gridSize) * gridSize - gridSize;
+  const { maxX, maxY } = getMaxBounds();
 
   let pacman = {};
   do {
