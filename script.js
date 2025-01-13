@@ -539,6 +539,7 @@ function resetGame() {
     timerElement.textContent = "Time: 3:00";
   }
 
+  // Diverse musikk-kommandoer
   // Nullstill bakgrunnsmusikk
   const backgroundMusic = document.getElementById("background-music");
   if (backgroundMusic) {
@@ -574,10 +575,11 @@ function playMainScreenMusic() {
   }
 }
 
+// Vis hjemskjermen
 function showHomeScreen() {
   const homeScreen = document.getElementById("home-screen");
   if (homeScreen) {
-    homeScreen.classList.remove("hidden"); // Vis hjemskjermen
+    homeScreen.classList.remove("hidden");
   }
 }
 

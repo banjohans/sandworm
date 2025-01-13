@@ -126,6 +126,33 @@ body {
   height: 20px; /* Samme som gridSize */
 }
 
+/* Juster størrelse på slange og fremen på mindre enheter */
+/* Mobil */
+@media (max-width: 768px) {
+  body {
+    background-size: contain; /* Tilpass bakgrunnen */
+    overflow: hidden;
+  }
+  .pacman,
+  .snake {
+    width: 12px; /* Mindre størrelse på mobil */
+    height: 12px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+  body {
+    background-size: contain;
+    overflow: hidden;
+  }
+  .pacman,
+  .snake {
+    width: 20px; /* Større figurer på datamaskin */
+    height: 20px;
+  }
+}
+
 .pacman {
   background-color: #907406; /* Gul for Pac-Man */
   border-radius: 50%;
