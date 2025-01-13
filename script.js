@@ -687,7 +687,7 @@ function handleTouchStart(event) {
     updateScore();
 
     isSwiping = false; // Forhindre at swipe også trigges
-  }, 300); // 300 ms for long press
+  }, 500); // 500 ms for long press
 }
 
 // Bevegelse under touch (sjekker for swipe-bevegelse)
@@ -697,7 +697,7 @@ function handleTouchMove(event) {
   const diffY = Math.abs(touch.clientY - startY);
 
   // Hvis det er bevegelse, avbryt long press
-  if (diffX > 10 || diffY > 10) {
+  if (diffX > 20 || diffY > 20) {
     clearTimeout(longPressTimer);
     isSwiping = true;
   }
