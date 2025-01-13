@@ -661,69 +661,80 @@ function updateScore() {
 // Swipefunksjoner for å kunne spill på mobil
 
 let startX, startY, endX, endY;
+let isSwiping = false;
+let longPressTimer;
 
-// Start av swipe
+// Start av touch (for både swipe og long press)
 function handleTouchStart(event) {
   const touch = event.touches[0];
   startX = touch.clientX;
   startY = touch.clientY;
-}
+  isSwiping = false;
 
-// Slutt av swipe
-function handleTouchEnd(event) {
-  const touch = event.changedTouches[0];
-  endX = touch.clientX;
-  endY = touch.clientY;
-
-  // Beregn swipe-retning
-  const diffX = endX - startX;
-  const diffY = endY - startY;
-
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    // Horisontal swipe
-    if (diffX > 0 && direction.x === 0) {
-      direction = { x: 1, y: 0 }; // Høyre
-    } else if (diffX < 0 && direction.x === 0) {
-      direction = { x: -1, y: 0 }; // Venstre
-    }
-  } else {
-    // Vertikal swipe
-    if (diffY > 0 && direction.y === 0) {
-      direction = { x: 0, y: 1 }; // Ned
-    } else if (diffY < 0 && direction.y === 0) {
-      direction = { x: 0, y: -1 }; // Opp
-    }
-  }
-}
-
-let lastTapTime = 0; // For å holde styr på forrige tap-tid
-
-function handleDoubleTap(event) {
-  const currentTime = new Date().getTime();
-  const tapInterval = currentTime - lastTapTime;
-
-  if (tapInterval < 300 && tapInterval > 0) {
-    // Registrer double-tap
-    const touch = event.touches[0];
+  // Start en long press-timer
+  longPressTimer = setTimeout(() => {
     const newHeadX = Math.floor(touch.clientX / gridSize) * gridSize;
     const newHeadY = Math.floor(touch.clientY / gridSize) * gridSize;
 
-    // Flytt hodet til den nye posisjonen
+    // Flytt hodet til den nye posisjonen (warp)
     const newHead = { x: newHeadX, y: newHeadY };
 
-    // Oppdater slangen, flytt segmentene for å følge etter
     snake = [newHead, ...snake.slice(0, snake.length - 1)];
     createSnake();
 
     // Reduser poengsum og oppdater visningen
     score = Math.max(0, score - 5); // Sørg for at poeng ikke blir negativ
     updateScore();
-  }
 
-  lastTapTime = currentTime; // Oppdater siste tap-tid
+    isSwiping = false; // Forhindre at swipe også trigges
+  }, 300); // 300 ms for long press
 }
 
-// Legg til event listeners for mobil-swipe og tap
+// Bevegelse under touch (sjekker for swipe-bevegelse)
+function handleTouchMove(event) {
+  const touch = event.touches[0];
+  const diffX = Math.abs(touch.clientX - startX);
+  const diffY = Math.abs(touch.clientY - startY);
+
+  // Hvis det er bevegelse, avbryt long press
+  if (diffX > 10 || diffY > 10) {
+    clearTimeout(longPressTimer);
+    isSwiping = true;
+  }
+}
+
+// Slutt av touch (sjekker for swipe-retning)
+function handleTouchEnd(event) {
+  clearTimeout(longPressTimer); // Avbryt long press hvis brukeren slipper før tiden
+
+  if (isSwiping) {
+    const touch = event.changedTouches[0];
+    endX = touch.clientX;
+    endY = touch.clientY;
+
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+
+    // Sjekk om det er en horisontal eller vertikal swipe
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      // Horisontal swipe
+      if (diffX > 0 && direction.x === 0) {
+        direction = { x: 1, y: 0 }; // Høyre
+      } else if (diffX < 0 && direction.x === 0) {
+        direction = { x: -1, y: 0 }; // Venstre
+      }
+    } else {
+      // Vertikal swipe
+      if (diffY > 0 && direction.y === 0) {
+        direction = { x: 0, y: 1 }; // Ned
+      } else if (diffY < 0 && direction.y === 0) {
+        direction = { x: 0, y: -1 }; // Opp
+      }
+    }
+  }
+}
+
+// Legg til event listeners for swipe og long press
 window.addEventListener("touchstart", handleTouchStart);
+window.addEventListener("touchmove", handleTouchMove);
 window.addEventListener("touchend", handleTouchEnd);
-window.addEventListener("touchstart", handleDoubleTap);
