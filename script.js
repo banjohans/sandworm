@@ -18,6 +18,28 @@ const rulesOverlay = document.getElementById("rules-overlay");
 const closeRulesButton = document.getElementById("close-rules-button");
 const exitButton = document.getElementById("exit-button");
 
+// HIGHSCORE
+function saveHighscore(score) {
+  const currentHighscore = parseInt(localStorage.getItem("highscore")) || 0;
+  if (score > currentHighscore) {
+    localStorage.setItem("highscore", score);
+    return score;
+  }
+  return currentHighscore;
+}
+
+function getHighscore() {
+  return parseInt(localStorage.getItem("highscore")) || 0;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const highscoreDisplay = document.querySelector("#highscore-display");
+  if (highscoreDisplay) {
+    const highscore = getHighscore(); // Hent eksisterende highscore
+    highscoreDisplay.textContent = `Highscore: ${highscore}`;
+  }
+});
+
 // Funksjon for å kalkulere en dynamisk gridsize, for jevner opplevelse på ulike format
 function calculateGridSize() {
   const baseSize = Math.min(window.innerWidth, window.innerHeight) / 50; // Juster faktor etter ønsket tetthet
@@ -123,6 +145,13 @@ function exitGame() {
 
   // Vis hjemskjermen
   homeScreen.classList.remove("hidden");
+
+  // Oppdater highscore på hjemskjermen
+  const highscoreDisplay = document.querySelector("#highscore-display");
+  if (highscoreDisplay) {
+    const highscore = getHighscore();
+    highscoreDisplay.textContent = `Highscore: ${highscore}`;
+  }
 
   // Stopp alle aktive intervaller
   clearInterval(gameInterval);
@@ -721,8 +750,13 @@ let score = 0;
 
 function updateScore() {
   const scoreElement = document.querySelector("#score");
+  const highscoreElement = document.querySelector("#highscore");
   if (scoreElement) {
-    scoreElement.textContent = `Score: ${score}`; // Oppdater poengtallet
+    scoreElement.textContent = `Score: ${score}`;
+  }
+  if (highscoreElement) {
+    const highscore = saveHighscore(score);
+    highscoreElement.textContent = `Highscore: ${highscore}`;
   }
 }
 
