@@ -661,80 +661,41 @@ function updateScore() {
 // Swipefunksjoner for å kunne spill på mobil
 
 let startX, startY, endX, endY;
-let isSwiping = false;
-let longPressTimer;
 
-// Start av touch (for både swipe og long press)
+// Start av swipe
 function handleTouchStart(event) {
   const touch = event.touches[0];
   startX = touch.clientX;
   startY = touch.clientY;
-  isSwiping = false;
-
-  // Start en long press-timer
-  longPressTimer = setTimeout(() => {
-    const newHeadX = Math.floor(touch.clientX / gridSize) * gridSize;
-    const newHeadY = Math.floor(touch.clientY / gridSize) * gridSize;
-
-    // Flytt hodet til den nye posisjonen (warp)
-    const newHead = { x: newHeadX, y: newHeadY };
-
-    snake = [newHead, ...snake.slice(0, snake.length - 1)];
-    createSnake();
-
-    // Reduser poengsum og oppdater visningen
-    score = Math.max(0, score - 5); // Sørg for at poeng ikke blir negativ
-    updateScore();
-
-    isSwiping = false; // Forhindre at swipe også trigges
-  }, 500); // 500 ms for long press
 }
 
-// Bevegelse under touch (sjekker for swipe-bevegelse)
-function handleTouchMove(event) {
-  const touch = event.touches[0];
-  const diffX = Math.abs(touch.clientX - startX);
-  const diffY = Math.abs(touch.clientY - startY);
-
-  // Hvis det er bevegelse, avbryt long press
-  if (diffX > 20 || diffY > 20) {
-    clearTimeout(longPressTimer);
-    isSwiping = true;
-  }
-}
-
-// Slutt av touch (sjekker for swipe-retning)
+// Slutt av swipe
 function handleTouchEnd(event) {
-  clearTimeout(longPressTimer); // Avbryt long press hvis brukeren slipper før tiden
+  const touch = event.changedTouches[0];
+  endX = touch.clientX;
+  endY = touch.clientY;
 
-  if (isSwiping) {
-    const touch = event.changedTouches[0];
-    endX = touch.clientX;
-    endY = touch.clientY;
+  // Beregn swipe-retning
+  const diffX = endX - startX;
+  const diffY = endY - startY;
 
-    const diffX = endX - startX;
-    const diffY = endY - startY;
-
-    // Sjekk om det er en horisontal eller vertikal swipe
-    if (Math.abs(diffX) > Math.abs(diffY)) {
-      // Horisontal swipe
-      if (diffX > 0 && direction.x === 0) {
-        direction = { x: 1, y: 0 }; // Høyre
-      } else if (diffX < 0 && direction.x === 0) {
-        direction = { x: -1, y: 0 }; // Venstre
-      }
-    } else {
-      // Vertikal swipe
-      if (diffY > 0 && direction.y === 0) {
-        direction = { x: 0, y: 1 }; // Ned
-      } else if (diffY < 0 && direction.y === 0) {
-        direction = { x: 0, y: -1 }; // Opp
-      }
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    // Horisontal swipe
+    if (diffX > 0 && direction.x === 0) {
+      direction = { x: 1, y: 0 }; // Høyre
+    } else if (diffX < 0 && direction.x === 0) {
+      direction = { x: -1, y: 0 }; // Venstre
+    }
+  } else {
+    // Vertikal swipe
+    if (diffY > 0 && direction.y === 0) {
+      direction = { x: 0, y: 1 }; // Ned
+    } else if (diffY < 0 && direction.y === 0) {
+      direction = { x: 0, y: -1 }; // Opp
     }
   }
 }
 
-// Legg til event listeners for swipe og long press
+// Legg til event listeners for mobil-swipe og tap
 window.addEventListener("touchstart", handleTouchStart);
-window.addEventListener("touchmove", handleTouchMove);
 window.addEventListener("touchend", handleTouchEnd);
