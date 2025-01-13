@@ -663,6 +663,11 @@ function handleMouseClick(event) {
 
 // La en super-pacman komme med ujevne mellomrom mellom 1 og 2 minutt, som gir høgere poeng
 function scheduleSuperPacmanSpawn() {
+  // Sjekk om en timeout allerede er aktiv
+  if (superPacmanTimeout) {
+    console.warn("SuperPacman spawn already scheduled. Skipping...");
+    return; // Avslutt funksjonen tidlig
+  }
   const minDelay = 60000; // Minimum forsinkelse: 1 minutt
   const maxDelay = 120000; // Maksimum forsinkelse: 2 minutter
   const randomDelay =
