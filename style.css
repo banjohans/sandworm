@@ -288,3 +288,8 @@ body {
 #exit-button:hover {
   background-color: #a0522d; /* Endre farge ved hover */
 }
+
+#highscore-display {
+  font-size: 1.2rem;
+  font-family: "Barlow Semi Condensed", serif;
+}

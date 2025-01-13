@@ -18,27 +18,69 @@ const rulesOverlay = document.getElementById("rules-overlay");
 const closeRulesButton = document.getElementById("close-rules-button");
 const exitButton = document.getElementById("exit-button");
 
-// HIGHSCORE
-function saveHighscore(score) {
-  const currentHighscore = parseInt(localStorage.getItem("highscore")) || 0;
-  if (score > currentHighscore) {
-    localStorage.setItem("highscore", score);
-    return score;
+function getHighscore() {
+  const storedHighscore = localStorage.getItem("highscore");
+  console.log("Stored highscore from localStorage:", storedHighscore); // Debugging
+
+  try {
+    // Returner parsed verdi eller standard
+    return storedHighscore
+      ? JSON.parse(storedHighscore)
+      : { initials: "AAA", score: 0 };
+  } catch (error) {
+    console.error("Failed to parse highscore:", error);
+    localStorage.removeItem("highscore"); // Fjern ødelagt data
+    return { initials: "AAA", score: 0 }; // Returner standard verdi
   }
-  return currentHighscore;
 }
 
-function getHighscore() {
-  return parseInt(localStorage.getItem("highscore")) || 0;
+// HIGHSCORE
+function saveHighscore(score) {
+  const currentHighscore = getHighscore(); // Hent eksisterende highscore
+  console.log("Current highscore object:", currentHighscore); // Debugging
+
+  if (score > currentHighscore.score) {
+    const initials = prompt("Congratulations! Enter your initials (3 letters):")
+      ?.toUpperCase()
+      .slice(0, 3); // Begrens til 3 tegn
+
+    if (!initials) {
+      console.warn("Highscore update canceled: No initials entered.");
+      return currentHighscore;
+    }
+
+    const newHighscore = { initials, score };
+    localStorage.setItem("highscore", JSON.stringify(newHighscore));
+    console.log("New highscore saved:", newHighscore);
+    return newHighscore;
+  }
+
+  console.log("Highscore not updated");
+  return currentHighscore;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const highscoreDisplay = document.querySelector("#highscore-display");
   if (highscoreDisplay) {
-    const highscore = getHighscore(); // Hent eksisterende highscore
-    highscoreDisplay.textContent = `Highscore: ${highscore}`;
+    const highscore = getHighscore();
+    highscoreDisplay.textContent = `Highscore: ${highscore.initials} - ${highscore.score}`;
   }
 });
+
+// SCORE
+let score = 0;
+
+function updateScore() {
+  const scoreElement = document.querySelector("#score");
+  const highscoreElement = document.querySelector("#highscore");
+  if (scoreElement) {
+    scoreElement.textContent = `Score: ${score}`;
+  }
+  if (highscoreElement) {
+    const highscore = getHighscore();
+    highscoreElement.textContent = `Highscore: ${highscore.initials} - ${highscore.score}`;
+  }
+}
 
 // Funksjon for å kalkulere en dynamisk gridsize, for jevner opplevelse på ulike format
 function calculateGridSize() {
@@ -140,21 +182,25 @@ function startSeamlessLoop() {
 
 // Funksjon for å avslutte spillet
 function exitGame() {
+  // Oppdater highscore før noe annet
+  const highscore = saveHighscore(score);
+
   // Skjul exit-knappen
   exitButton.classList.add("hidden");
 
   // Vis hjemskjermen
   homeScreen.classList.remove("hidden");
 
-  // Oppdater highscore på hjemskjermen
+  // Vis oppdatert highscore
   const highscoreDisplay = document.querySelector("#highscore-display");
   if (highscoreDisplay) {
-    const highscore = getHighscore();
-    highscoreDisplay.textContent = `Highscore: ${highscore}`;
+    highscoreDisplay.textContent = `Highscore: ${highscore.initials} - ${highscore.score}`;
   }
 
   // Stopp alle aktive intervaller
   clearInterval(gameInterval);
+  clearInterval(pacmenInterval);
+  clearInterval(pacmenDirectionInterval);
   clearInterval(timerInterval);
 
   // Nullstill variabler
@@ -244,39 +290,48 @@ function updateTimer() {
     timerElement.textContent = `Time: ${minutes}:${seconds
       .toString()
       .padStart(2, "0")}`;
-    // Spill blip-lyd i de siste 10 sekundene
 
+    // Spill blip-lyd i de siste 10 sekundene
     if (timeRemaining <= 10 && timeRemaining > 0 && blipSound) {
-      blipSound.volume = 0.2; // redusert volum for bedre opplevelse
+      blipSound.volume = 0.2; // Redusert volum for bedre opplevelse
       blipSound.currentTime = 0; // Start lyden fra begynnelsen
       blipSound
         .play()
         .catch((err) => console.error("Error playing blip sound:", err));
     }
   } else {
-    // Stop the game
+    // Spill er over, stopp alle aktive intervaller
     clearInterval(timerInterval);
     clearInterval(gameInterval);
 
-    // Update and show game over message
+    // Oppdater highscore
+    const highscore = saveHighscore(score);
+
+    // Oppdater og vis "game over"-meldingen
     finalScoreSpan.textContent = score;
     gameOverMessage.classList.remove("hidden");
 
-    // Show home screen
+    // Vis hjemskjermen
     homeScreen.classList.remove("hidden");
 
-    // Stop background music
+    // Vis oppdatert highscore
+    const highscoreDisplay = document.querySelector("#highscore-display");
+    if (highscoreDisplay) {
+      highscoreDisplay.textContent = `Highscore: ${highscore.initials} - ${highscore.score}`;
+    }
+
+    // Stopp bakgrunnsmusikken
     const backgroundMusic = document.getElementById("background-music");
     if (backgroundMusic) {
       backgroundMusic.pause();
-      backgroundMusic.currentTime = 0; // Reset background music
+      backgroundMusic.currentTime = 0; // Nullstill musikken
     }
 
-    // Start main screen music
+    // Start musikken til hovedskjermen
     const mainScreenMusic = document.getElementById("mainscreen-music");
     if (mainScreenMusic) {
-      mainScreenMusic.volume = 0.7; // Adjust volume
-      mainScreenMusic.currentTime = 0; // Start from beginning
+      mainScreenMusic.volume = 0.7; // Juster volum
+      mainScreenMusic.currentTime = 0; // Start fra begynnelsen
       mainScreenMusic
         .play()
         .catch((err) => console.error("Error playing main screen music:", err));
@@ -466,8 +521,14 @@ function movePacmen() {
 
     // Oppdater Pac-Man i DOM
     const pacmanElement = document.querySelectorAll(".pacman")[index];
-    pacmanElement.style.left = `${pacman.x}px`;
-    pacmanElement.style.top = `${pacman.y}px`;
+    if (pacmanElement) {
+      pacmanElement.style.left = `${pacman.x}px`;
+      pacmanElement.style.top = `${pacman.y}px`;
+    } else {
+      console.warn(
+        `Pac-Man element not found for index ${index}. Skipping update.`
+      );
+    }
 
     // Rotér Pac-Man basert på retningen
     if (pacman.direction.x === 1) {
@@ -744,21 +805,6 @@ function startGame() {
 // Lytt etter tastetrykk
 window.addEventListener("keydown", handleKeydown);
 window.addEventListener("click", handleMouseClick);
-
-// SCORE
-let score = 0;
-
-function updateScore() {
-  const scoreElement = document.querySelector("#score");
-  const highscoreElement = document.querySelector("#highscore");
-  if (scoreElement) {
-    scoreElement.textContent = `Score: ${score}`;
-  }
-  if (highscoreElement) {
-    const highscore = saveHighscore(score);
-    highscoreElement.textContent = `Highscore: ${highscore}`;
-  }
-}
 
 // Swipefunksjoner for å kunne spill på mobil
 
