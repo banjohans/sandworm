@@ -696,25 +696,34 @@ function handleTouchEnd(event) {
   }
 }
 
-// Warp ormen på mobil med touch tap
-function handleTouchTap(event) {
-  const touch = event.touches[0]; // Få den første berøringen
-  const newHeadX = Math.floor(touch.clientX / gridSize) * gridSize;
-  const newHeadY = Math.floor(touch.clientY / gridSize) * gridSize;
+let lastTapTime = 0; // For å holde styr på forrige tap-tid
 
-  // Flytt hodet til den nye posisjonen
-  const newHead = { x: newHeadX, y: newHeadY };
+function handleDoubleTap(event) {
+  const currentTime = new Date().getTime();
+  const tapInterval = currentTime - lastTapTime;
 
-  // Oppdater slangen, flytt segmentene for å følge etter
-  snake = [newHead, ...snake.slice(0, snake.length - 1)];
-  createSnake();
+  if (tapInterval < 300 && tapInterval > 0) {
+    // Registrer double-tap
+    const touch = event.touches[0];
+    const newHeadX = Math.floor(touch.clientX / gridSize) * gridSize;
+    const newHeadY = Math.floor(touch.clientY / gridSize) * gridSize;
 
-  // Reduser poengsum og oppdater visningen
-  score = Math.max(0, score - 5); // Sørg for at poeng ikke blir negativ
-  updateScore();
+    // Flytt hodet til den nye posisjonen
+    const newHead = { x: newHeadX, y: newHeadY };
+
+    // Oppdater slangen, flytt segmentene for å følge etter
+    snake = [newHead, ...snake.slice(0, snake.length - 1)];
+    createSnake();
+
+    // Reduser poengsum og oppdater visningen
+    score = Math.max(0, score - 5); // Sørg for at poeng ikke blir negativ
+    updateScore();
+  }
+
+  lastTapTime = currentTime; // Oppdater siste tap-tid
 }
 
 // Legg til event listeners for mobil-swipe og tap
 window.addEventListener("touchstart", handleTouchStart);
 window.addEventListener("touchend", handleTouchEnd);
-window.addEventListener("touchstart", handleTouchTap);
+window.addEventListener("touchstart", handleDoubleTap);
