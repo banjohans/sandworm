@@ -37,6 +37,9 @@ function exitGame() {
 
   // Fjern slange og Pac-Men fra skjermen
   document.querySelectorAll(".snake, .pacman").forEach((el) => el.remove());
+
+  stopBackgroundMusic();
+  playMainScreenMusic();
 }
 
 // Koble "Exit"-knappen til funksjonen
@@ -104,6 +107,9 @@ function updateTimer() {
   const gameOverMessage = document.getElementById("game-over-message");
   const finalScoreSpan = document.getElementById("final-score");
 
+  // Referanse til blip-lyden
+  const blipSound = document.getElementById("blip-sound");
+
   if (timeRemaining > 0) {
     timeRemaining--;
     const minutes = Math.floor(timeRemaining / 60);
@@ -111,6 +117,15 @@ function updateTimer() {
     timerElement.textContent = `Time: ${minutes}:${seconds
       .toString()
       .padStart(2, "0")}`;
+    // Spill blip-lyd i de siste 10 sekundene
+
+    if (timeRemaining <= 10 && timeRemaining > 0 && blipSound) {
+      blipSound.volume = 0.2; // redusert volum for bedre opplevelse
+      blipSound.currentTime = 0; // Start lyden fra begynnelsen
+      blipSound
+        .play()
+        .catch((err) => console.error("Error playing blip sound:", err));
+    }
   } else {
     // Stop the game
     clearInterval(timerInterval);
@@ -123,10 +138,21 @@ function updateTimer() {
     // Show home screen
     homeScreen.classList.remove("hidden");
 
-    // Stop background music if you want
+    // Stop background music
     const backgroundMusic = document.getElementById("background-music");
     if (backgroundMusic) {
       backgroundMusic.pause();
+      backgroundMusic.currentTime = 0; // Reset background music
+    }
+
+    // Start main screen music
+    const mainScreenMusic = document.getElementById("mainscreen-music");
+    if (mainScreenMusic) {
+      mainScreenMusic.volume = 0.7; // Adjust volume
+      mainScreenMusic.currentTime = 0; // Start from beginning
+      mainScreenMusic
+        .play()
+        .catch((err) => console.error("Error playing main screen music:", err));
     }
   }
 }
@@ -521,9 +547,46 @@ function resetGame() {
   }
 }
 
+function stopBackgroundMusic() {
+  const backgroundMusic = document.getElementById("background-music");
+  if (backgroundMusic) {
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0; // Nullstill
+  }
+}
+
+function stopMainScreenMusic() {
+  const mainScreenMusic = document.getElementById("mainscreen-music");
+  if (mainScreenMusic) {
+    mainScreenMusic.pause();
+    mainScreenMusic.currentTime = 0; // Nullstill musikken
+  }
+}
+
+function playMainScreenMusic() {
+  const mainScreenMusic = document.getElementById("mainscreen-music");
+  if (mainScreenMusic) {
+    mainScreenMusic.volume = 0.7; // Juster volumet
+    mainScreenMusic.currentTime = 0; // Start fra begynnelsen
+    mainScreenMusic
+      .play()
+      .catch((err) => console.error("Error playing main screen music:", err));
+  }
+}
+
+function showHomeScreen() {
+  const homeScreen = document.getElementById("home-screen");
+  if (homeScreen) {
+    homeScreen.classList.remove("hidden"); // Vis hjemskjermen
+  }
+}
+
 // Start spillet
 function startGame() {
   resetGame(); // Nullstill spillet
+
+  // Stopp mainscreen-music
+  stopMainScreenMusic();
 
   // Gjem game over melding hvis den finnes
   const gameOverMessage = document.getElementById("game-over-message");
