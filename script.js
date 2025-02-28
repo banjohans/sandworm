@@ -1,6 +1,6 @@
 // const gridSize = 20; // Størrelsen på hver rute i rutenettet
 let snake = [{ x: 200, y: 200 }]; // Slangens startposisjon
-let numPacmen = 1;
+let numPacmen = 3;
 let direction = { x: 1, y: 0 }; // Slangens bevegelsesretning (start: høyre)
 let pacmanDirection = { x: 1, y: 0 }; // Pac-Man sin startretning (mot høyre)
 let growing = false; // Slangen vokser ikke by default
@@ -141,18 +141,18 @@ function moveSnake() {
   createSnake();
 }
 
-function movePacmen() {
-  // Respekter rammene satt av #game-container
-  const gameContainer = document.getElementById("game-container");
-  const maxX = gameContainer.offsetWidth - gridSize;
-  const maxY = gameContainer.offsetHeight - gridSize;
+// function movePacmen() {
+//   // Respekter rammene satt av #game-container
+//   const gameContainer = document.getElementById("game-container");
+//   const maxX = gameContainer.offsetWidth - gridSize;
+//   const maxY = gameContainer.offsetHeight - gridSize;
 
-  pacmen.forEach((pacman) => {
-    pacman.x += pacman.direction.x * gridSize;
-    pacman.y += pacman.direction.y * gridSize;
-    updatePacmanPosition(pacman);
-  });
-}
+//   pacmen.forEach((pacman) => {
+//     pacman.x += pacman.direction.x * gridSize;
+//     pacman.y += pacman.direction.y * gridSize;
+//     updatePacmanPosition(pacman);
+//   });
+// }
 
 // Funksjon for å avslutte spillet
 function exitGame() {
@@ -472,55 +472,66 @@ function moveSnake() {
 }
 
 function movePacmen() {
+  const superPacmanInterval = 100; // Super-Pac-Men oppdateres hver 100 ms
+  const regularPacmanInterval = 200; // Vanlige Pac-Men oppdateres hver 200 ms
+
+  const currentTime = Date.now(); // Nåværende tid
+
   pacmen.forEach((pacman, index) => {
-    // Sjekk om det er på tide å endre retning
+    const updateInterval = pacman.isSuper
+      ? superPacmanInterval
+      : regularPacmanInterval;
+
+    // Sjekk om det er tid for denne Pac-Man å oppdatere
     if (
-      !pacman.nextDirectionChange ||
-      Date.now() > pacman.nextDirectionChange
+      !pacman.lastUpdate ||
+      currentTime - pacman.lastUpdate >= updateInterval
     ) {
-      pacman.direction = randomDirection(); // Velg en ny tilfeldig retning
-      pacman.nextDirectionChange = Date.now() + Math.random() * 4000 + 2000; // Neste retning etter 2-4 sekunder
-    }
+      pacman.lastUpdate = currentTime; // Oppdater siste tid
 
-    // Oppdater posisjonen basert på retningen
-    pacman.x += pacman.direction.x * gridSize;
-    pacman.y += pacman.direction.y * gridSize;
+      // Beregn neste posisjon basert på grid-størrelse
+      let newX = pacman.x + pacman.direction.x * gridSize;
+      let newY = pacman.y + pacman.direction.y * gridSize;
 
-    // Snu retningen hvis Pac-Man treffer kanten av skjermen
-    if (pacman.x < 0 || pacman.x >= window.innerWidth) {
-      pacman.direction.x *= -1;
-    }
-    if (pacman.y < 0 || pacman.y >= window.innerHeight) {
-      pacman.direction.y *= -1;
-    }
+      // Hold Pac-Men innenfor spillområdet
+      const { maxX, maxY } = getMaxBounds();
+      if (newX < 0 || newX > maxX) {
+        pacman.direction.x *= -1; // Snu retningen horisontalt
+        newX = pacman.x + pacman.direction.x * gridSize;
+      }
+      if (newY < 0 || newY > maxY) {
+        pacman.direction.y *= -1; // Snu retningen vertikalt
+        newY = pacman.y + pacman.direction.y * gridSize;
+      }
 
-    // Oppdater Pac-Man i DOM
-    const pacmanElement = document.querySelectorAll(".pacman")[index];
-    if (pacmanElement) {
-      pacmanElement.style.left = `${pacman.x}px`;
-      pacmanElement.style.top = `${pacman.y}px`;
-    } else {
-      console.warn(
-        `Pac-Man element not found for index ${index}. Skipping update.`
-      );
-    }
+      // Oppdater posisjon på grid
+      pacman.x = Math.round(newX / gridSize) * gridSize;
+      pacman.y = Math.round(newY / gridSize) * gridSize;
 
-    // Rotér Pac-Man basert på retningen
-    if (pacman.direction.x === 1) {
-      pacmanElement.style.transform = "rotate(0deg)"; // Går mot høyre
-    } else if (pacman.direction.x === -1) {
-      pacmanElement.style.transform = "rotate(180deg)"; // Går mot venstre
-    } else if (pacman.direction.y === -1) {
-      pacmanElement.style.transform = "rotate(270deg)"; // Går opp
-    } else if (pacman.direction.y === 1) {
-      pacmanElement.style.transform = "rotate(90deg)"; // Går ned
+      // Oppdater Pac-Man i DOM
+      const pacmanElement = document.querySelectorAll(".pacman")[index];
+      if (pacmanElement) {
+        pacmanElement.style.left = `${pacman.x}px`;
+        pacmanElement.style.top = `${pacman.y}px`;
+
+        // Rotér Pac-Man basert på retningen
+        if (pacman.direction.x === 1) {
+          pacmanElement.style.transform = "rotate(0deg)"; // Går mot høyre
+        } else if (pacman.direction.x === -1) {
+          pacmanElement.style.transform = "rotate(180deg)"; // Går mot venstre
+        } else if (pacman.direction.y === -1) {
+          pacmanElement.style.transform = "rotate(270deg)"; // Går opp
+        } else if (pacman.direction.y === 1) {
+          pacmanElement.style.transform = "rotate(90deg)"; // Går ned
+        }
+      }
     }
   });
 }
 
 const hitboxSize = gridSize; // Treffer Pac-Man hvis slangehodet er innenfor 1 rute
 let lastCloseTimestamp = null; // Tidspunktet da slangen sist var innenfor treffområdet
-const hitTimeout = 200; // Tidsvindu for å regne det som en treff (200ms)
+// const hitTimeout = 200; // Tidsvindu for å regne det som en treff (200ms)
 
 // Spiselyder til når ormen spiser frimenn
 function playRandomChompSound() {
