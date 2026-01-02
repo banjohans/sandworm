@@ -1,0 +1,17 @@
+/* HUD styles */
+.hud-element {
+  position: absolute;
+  color: rgb(96, 38, 0);
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 1.3rem;
+}
+
+#timer {
+  top: 10px;
+  left: 20px;
+}
+
+#score {
+  top: 10px;
+  right: 20px;
+}

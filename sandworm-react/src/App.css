@@ -1,0 +1,31 @@
+/* App root styles */
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background-image: url('/images/dune.png');
+  background-color: #dfa64a;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  color: aliceblue;
+}
+
+html,
+body {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
