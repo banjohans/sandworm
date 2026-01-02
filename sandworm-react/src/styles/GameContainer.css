@@ -1,0 +1,26 @@
+/* GameContainer styles */
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#exit-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  color: white;
+  background-color: #8b4513;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#exit-button:hover {
+  background-color: #a0522d;
+}
